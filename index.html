@@ -245,16 +245,16 @@ const CITIES = [
   { name:'Sukabumi',   lat:-6.9215,  lng:106.9272, method:20, tz:'WIB' },
 ];
 const TICKER_ITEMS = [
-  { text: 'Sesungguhnya shalat itu mencegah dari perbuatan keji dan mungkar.', src: 'QS. Al-Ankabut: 45' },
-  { text: 'Dan dirikanlah shalat, tunaikanlah zakat, dan rukulah beserta orang-orang yang ruku.', src: 'QS. Al-Baqarah: 43' },
-  { text: 'Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain.', src: 'HR. Ahmad' },
-  { text: 'Barangsiapa yang beriman kepada Allah dan hari akhir, hendaklah ia berkata baik atau diam.', src: 'HR. Bukhari & Muslim' },
-  { text: 'Sesungguhnya bersama kesulitan ada kemudahan.', src: 'QS. Al-Insyirah: 6' },
-  { text: 'Dan bertawakkallah kepada Allah. Cukuplah Allah sebagai Pelindung.', src: 'QS. An-Nisa: 81' },
-  { text: 'Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.', src: 'HR. Muslim' },
-  { text: 'Senyummu kepada saudaramu adalah sedekah.', src: 'HR. Tirmidzi' },
-  { text: 'Ingatlah, hanya dengan mengingat Allah hati menjadi tenteram.', src: 'QS. Ar-Rad: 28' },
-  { text: 'Janganlah kamu bersikap lemah, dan janganlah pula kamu bersedih hati.', src: 'QS. Ali Imran: 139' },
+  { text: 'Sesungguhnya shalat itu mencegah dari perbuatan keji dan mungkar.', src: 'QS. Al-Ankabut: 45', color: '#F5E642' },
+  { text: 'Dan dirikanlah shalat, tunaikanlah zakat, dan rukulah beserta orang-orang yang ruku.', src: 'QS. Al-Baqarah: 43', color: '#6EDCA8' },
+  { text: 'Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain.', src: 'HR. Ahmad', color: '#7EC8F7' },
+  { text: 'Barangsiapa yang beriman kepada Allah dan hari akhir, hendaklah ia berkata baik atau diam.', src: 'HR. Bukhari & Muslim', color: '#F5A742' },
+  { text: 'Sesungguhnya bersama kesulitan ada kemudahan.', src: 'QS. Al-Insyirah: 6', color: '#E87EDB' },
+  { text: 'Dan bertawakkallah kepada Allah. Cukuplah Allah sebagai Pelindung.', src: 'QS. An-Nisa: 81', color: '#6EDCA8' },
+  { text: 'Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.', src: 'HR. Muslim', color: '#F5E642' },
+  { text: 'Senyummu kepada saudaramu adalah sedekah.', src: 'HR. Tirmidzi', color: '#7EC8F7' },
+  { text: 'Ingatlah, hanya dengan mengingat Allah hati menjadi tenteram.', src: 'QS. Ar-Rad: 28', color: '#F5A742' },
+  { text: 'Janganlah kamu bersikap lemah, dan janganlah pula kamu bersedih hati.', src: 'QS. Ali Imran: 139', color: '#E87EDB' },
 ];
 const SK=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
 const SN=['Subuh','Dzuhur','Ashar','Maghrib','Isya'];
@@ -269,7 +269,7 @@ function st(t){return t?t.substring(0,5):'--:--';}
 function nowMin(){const n=new Date();return n.getHours()*60+n.getMinutes();}
 function getNext(times,nm){for(let i=0;i<SK.length;i++){const min=toMin(times[SK[i]]);if(min>nm)return{name:SN[i],key:SK[i],time:times[SK[i]],min};}return{name:'Subuh',key:'Fajr',time:times.Fajr,min:toMin(times.Fajr)+1440};}
 async function fetchTimes(lat,lng,method){const d=new Date();const url='https://api.aladhan.com/v1/timings/'+pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()+'?latitude='+lat+'&longitude='+lng+'&method='+method;const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(j.code!==200)throw new Error(j.data||'API error');return j.data;}
-function buildTicker(){const inner=document.getElementById('ticker-inner');let html='';for(let pass=0;pass<2;pass++){TICKER_ITEMS.forEach((item,i)=>{if(i>0||pass>0)html+='<span class="ticker-dot"></span>';html+='<span class="ticker-item">'+item.text+'<span class="ticker-src">— '+item.src+'</span></span>';});}inner.innerHTML=html;requestAnimationFrame(()=>{const totalW=inner.scrollWidth/2;const dur=Math.round(totalW/80);inner.style.animationDuration=dur+'s';});}
+function buildTicker(){const inner=document.getElementById('ticker-inner');let html='';for(let pass=0;pass<2;pass++){TICKER_ITEMS.forEach((item,i)=>{if(i>0||pass>0)html+='<span class="ticker-dot"></span>';html+='<span class="ticker-item" style="color:'+item.color+'">'+item.text+'<span class="ticker-src" style="color:'+item.color+'">— '+item.src+'</span></span>';});}inner.innerHTML=html;requestAnimationFrame(()=>{const totalW=inner.scrollWidth/2;const dur=Math.round(totalW/80);inner.style.animationDuration=dur+'s';});}
 async function loadAll(){try{const prim=await fetchTimes(PRIMARY.lat,PRIMARY.lng,PRIMARY.method);primaryTimes=prim.timings;const h=prim.date.hijri;document.getElementById('s1-hijri').textContent=h.day+' '+h.month.en+' '+h.year+' H';const res=await Promise.allSettled(CITIES.map(c=>fetchTimes(c.lat,c.lng,c.method)));cityDataArr=CITIES.map((c,i)=>({name:c.name,tz:c.tz,times:res[i].status==='fulfilled'?res[i].value.timings:null}));document.getElementById('loading-overlay').style.display='none';ready=true;const nm=nowMin();buildStrip(nm,getNext(primaryTimes,nm).key);buildGrid(nm);showScreen(0);setInterval(()=>showScreen((current+1)%2),SLIDE_MS);}catch(e){const el=document.getElementById('ld-err');el.style.display='block';el.textContent='Gagal memuat: '+e.message+'. Pastikan internet aktif lalu refresh.';document.querySelector('.ld-spinner').style.display='none';}}
 function buildStrip(nm,nextKey){if(!primaryTimes)return;let h='';STK.forEach((k,i)=>{const min=toMin(primaryTimes[k]);let cls=k===nextKey?'active':min<nm?'passed':'';if(i>0)h+='<div class="strip-sep"></div>';h+='<div class="strip-item '+cls+'"><span class="si-name">'+STN[i]+'</span><span class="si-time">'+st(primaryTimes[k])+'</span></div>';});document.getElementById('strip').innerHTML=h;}
 function buildGrid(nm){let h='';cityDataArr.forEach(city=>{if(!city.times){h+='<div class="city-card"><div class="cc-city">'+city.name+'</div><div style="font-size:11px;color:rgba(240,237,228,0.3)">—</div></div>';return;}const next=getNext(city.times,nm);let rows='';SK.forEach((k,i)=>{const min=toMin(city.times[k]);let cls=k===next.key?'nxt':min<nm?'psd':'';rows+='<div class="cc-row '+cls+'"><span class="cc-n">'+SN[i]+'</span><span class="cc-t">'+st(city.times[k])+'</span></div>';});h+='<div class="city-card"><div class="cc-city">'+city.name+'</div><div class="cc-next-name">'+next.name+'</div><div class="cc-next-time">'+st(next.time)+' '+city.tz+'</div><div class="cc-line"></div><div class="cc-rows">'+rows+'</div></div>';});document.getElementById('grid').innerHTML=h;}
